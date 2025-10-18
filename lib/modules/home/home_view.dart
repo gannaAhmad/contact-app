@@ -1,6 +1,4 @@
-import 'dart:io';
-
-import 'package:contact/models/card_info_model.dart';
+import 'package:contact/hive_manager/hive_services.dart';
 import 'package:contact/modules/home/widgets/card_view.dart';
 import 'package:contact/modules/home/widgets/empty_screen.dart';
 import 'package:contact/modules/home/widgets/modal_view.dart';
@@ -18,86 +16,81 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<HomeView> {
-
-  List<CardInfoModel> cardInfo = [];
-
   @override
   Widget build(BuildContext context) {
+    
+  final len = HiveServices.getLen(); 
+
     return Scaffold(
       backgroundColor: AppColors.primaryColor,
       appBar: AppBar(
         backgroundColor: AppColors.primaryColor,
-        leading: Image.asset(AppImages.routeLogo,),
+        leading: Image.asset(
+          AppImages.routeLogo,
+        ),
         leadingWidth: MediaQuery.of(context).size.width * 0.5,
       ),
-
-        body: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child:  Column(
-            children: [
-    Expanded(
-    child: cardInfo.isEmpty
-                    ? EmptyScreen()
-                    : CardView(cardInfo: cardInfo, onRemove: _onRemove,),
-    ),
-              Align(
-                alignment: Alignment.bottomRight,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Visibility(
-                      visible: cardInfo.isNotEmpty,
-                      child: FloatingActionButton(
-                        onPressed: () {
-                          setState(() {
-
-                            cardInfo.removeLast();
-
-                          });
-                        },
-                        heroTag: null,
-                        backgroundColor: AppColors.redColor,
-                        child: Icon(EvaIcons.trash2, color: Colors.white),
-                      ),
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          children: [
+            Expanded(
+              child: len==0
+                  ? EmptyScreen()
+                  : CardView(),
+            ),
+            Align(
+              alignment: Alignment.bottomRight,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Visibility(
+                    visible: len>6,
+                    child: FloatingActionButton(
+                      onPressed: () {
+                        setState(() {
+                          HiveServices.deleteContact(
+                              HiveServices.getContacts().length - 1);
+                        });
+                      },
+                      heroTag: null,
+                      backgroundColor: AppColors.redColor,
+                      child: Icon(EvaIcons.trash2, color: Colors.white),
                     ),
-                    SizedBox(height: 15),
-                    Visibility(
-                      visible: cardInfo.length <6,
-                      child: FloatingActionButton(
-                        onPressed: () {
-                          _showModalSheet();
-                        },
-                        heroTag: null,
-                        backgroundColor: AppColors.offColor,
-                        child: Icon(EvaIcons.plus, color: AppColors.primaryColor),
-                      ),
+                  ),
+                  SizedBox(height: 15),
+                  Visibility(
+                    visible: len!=0,
+                    child: FloatingActionButton(
+                      onPressed: () {
+                        _showModalSheet();
+                      },
+                      heroTag: null,
+                      backgroundColor: AppColors.offColor,
+                      child: Icon(EvaIcons.plus, color: AppColors.primaryColor),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
-
+      ),
     );
   }
 
   void _showModalSheet() {
     showModalBottomSheet(
       isScrollControlled: true,
-        context: context,
-        backgroundColor: AppColors.primaryColor,
-        builder: (context) =>ModalView(onAddContact: _addContact),);
+      context: context,
+      
+      backgroundColor: AppColors.primaryColor,
+      builder: (context) => ModalView(),
+    );
   }
-  void _addContact(CardInfoModel contactInfo) {
-    setState(() {
-      cardInfo.add(contactInfo);
-    });
-  }
-  void _onRemove(int index) {
-    setState(() {
-      cardInfo.removeAt(index);
-    });
-  }
+
+
+
+
 }
